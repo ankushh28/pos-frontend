@@ -251,13 +251,18 @@ export const SalesHistory: React.FC<SalesHistoryProps> = () => {
                 <h3 className="font-medium text-gray-900 mb-2">Items:</h3>
                 <div className="space-y-1">
                   {order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
-                      <span className="text-gray-700">
-                        {typeof item.product === 'object' ? item.product.name : 'Product'} × {item.qty}
-                      </span>
-                      <span className="text-gray-600">₹{item.subtotal || (item.price * item.qty)}</span>
-                    </div>
-                  ))}
+  <div key={index} className="flex justify-between items-center text-sm">
+    <span className="text-gray-700">
+      {item.product && typeof item.product === 'object'
+        ? item.product.name
+        : 'Product'} × {item.qty}
+    </span>
+    <span className="text-gray-600">
+      ₹{item.subtotal || (item.price * item.qty)}
+    </span>
+  </div>
+))}
+
                 </div>
               </div>
 
