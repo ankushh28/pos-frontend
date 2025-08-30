@@ -41,7 +41,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onOTPRequired }) => {
         {/* Logo/Header */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-[200px] lg:w-[250px] rounded-full">
-            <img src="/logo.png" alt="Logo" className="text-white" />
+            <img src="https://i.ibb.co/zTbbXj00/Adobe-Express-file.png" alt="Logo" className="text-white" />
           </div>
         </div>
 
