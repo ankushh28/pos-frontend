@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Check } from 'lucide-react';
+import { X, Check, QrCode } from 'lucide-react';
 
 interface UPIPaymentModalProps {
   isOpen: boolean;
@@ -17,14 +17,14 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+      <div className="bg-surface rounded-3xl shadow-strong max-w-md w-full animate-slide-in">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">UPI Payment</h3>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h3 className="font-display text-xl font-semibold text-gray-900">UPI Payment</h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-xl text-accent-400 hover:text-accent-600 hover:bg-gray-50 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -32,46 +32,37 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <div className="text-center mb-6">
-            <p className="text-2xl font-bold text-gray-900 mb-2">₹{amount}</p>
-            <p className="text-gray-600">Scan QR code to pay</p>
+          <div className="text-center mb-8">
+            <p className="font-display text-3xl font-semibold text-primary mb-2">₹{amount}</p>
+            <p className="text-accent-400">Show QR code to customer</p>
           </div>
 
-          {/* QR Code Placeholder */}
-          <div className="bg-gray-100 rounded-xl p-8 mb-6 flex items-center justify-center">
-            <div className="w-48 h-48 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-              <img 
-                src="/qr-placeholder.png" 
-                alt="UPI QR Code" 
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  // Fallback if image doesn't exist
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling!.classList.remove('hidden');
-                }}
-              />
-              <div className="hidden text-gray-400 text-center">
-                <div className="w-32 h-32 border-2 border-gray-300 rounded-lg mb-2 mx-auto"></div>
-                <p className="text-sm">QR Code will appear here</p>
+          {/* QR Code Area */}
+          <div className="bg-gray-50 rounded-2xl p-8 mb-8 flex items-center justify-center">
+            <div className="w-48 h-48 bg-surface rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
+              <div className="text-center text-accent-400">
+                <QrCode className="h-16 w-16 mx-auto mb-3" />
+                <p className="text-sm">QR Code</p>
+                <p className="text-xs">₹{amount}</p>
               </div>
             </div>
           </div>
 
-          <p className="text-center text-gray-500 text-sm mb-6">
-            Show this QR code to customer for payment
+          <p className="text-center text-accent-400 text-sm mb-8">
+            Customer can scan this code with any UPI app
           </p>
 
           {/* Action Buttons */}
-          <div className="flex space-x-3">
+          <div className="flex space-x-4">
             <button
               onClick={onClose}
-              className="flex-1 py-3 px-4 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-4 px-6 border border-gray-200 rounded-2xl font-medium text-accent-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onReceived}
-              className="flex-1 bg-green-600 text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center space-x-2 hover:bg-green-700 transition-colors"
+              className="flex-1 btn-primary py-4 px-6 rounded-2xl font-medium flex items-center justify-center space-x-2 shadow-medium hover:shadow-strong"
             >
               <Check className="h-5 w-5" />
               <span>Payment Received</span>

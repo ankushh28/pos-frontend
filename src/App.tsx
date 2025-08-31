@@ -233,8 +233,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-md lg:max-w-[100%] mx-auto lg:flex-col lg:flex lg:justify-between bg-white min-h-screen lg:shadow-lg">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-md lg:max-w-[100%] mx-auto lg:flex-col lg:flex lg:justify-between bg-surface min-h-screen lg:shadow-strong">
         {renderActiveTab()}
         
         <Navigation

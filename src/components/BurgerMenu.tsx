@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Settings, Package } from 'lucide-react';
+import { Menu, X, Settings, Package, LogOut } from 'lucide-react';
 import { ActiveTab } from '../types';
 
 interface BurgerMenuProps {
@@ -25,7 +25,7 @@ export const BurgerMenu: React.FC<BurgerMenuProps> = ({ onNavigate, onLogout }) 
       {/* Menu Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+        className="p-3 rounded-xl text-accent-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
       >
         <Menu className="h-6 w-6" />
       </button>
@@ -33,36 +33,36 @@ export const BurgerMenu: React.FC<BurgerMenuProps> = ({ onNavigate, onLogout }) 
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Menu Panel */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-full w-80 bg-surface shadow-strong z-50 transform transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+            <h2 className="font-display text-lg font-semibold text-gray-900">Menu</h2>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-xl text-accent-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-4">
+        <div className="p-6">
           <nav className="space-y-2">
             {menuItems.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => handleItemClick(id)}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-accent-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
               >
                 <Icon className="h-5 w-5" />
                 <span className="font-medium">{label}</span>
@@ -70,15 +70,16 @@ export const BurgerMenu: React.FC<BurgerMenuProps> = ({ onNavigate, onLogout }) 
             ))}
           </nav>
 
-          <div className="mt-8 pt-4 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-gray-100">
             <button
               onClick={() => {
                 onLogout();
                 setIsOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-primary hover:bg-red-50 transition-colors"
             >
-              <span className="font-medium">Logout</span>
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium">Sign Out</span>
             </button>
           </div>
         </div>
