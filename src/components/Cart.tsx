@@ -177,7 +177,7 @@ export const Cart: React.FC<CartProps> = ({
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="Phone number (optional)"
-                    className="input-field pl-12"
+                    className="input-fieldIcon"
                   />
                 </div>
               </div>
@@ -257,7 +257,7 @@ export const Cart: React.FC<CartProps> = ({
                       placeholder="0"
                       min="0"
                       max={subtotal}
-                      className="input-field pl-12"
+                      className="input-fieldIcon pl-12"
                     />
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export const Cart: React.FC<CartProps> = ({
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Add order notes..."
                       rows={3}
-                      className="input-field pl-12 resize-none"
+                      className="input-fieldIcon pl-12 resize-none"
                     />
                   </div>
                 </div>

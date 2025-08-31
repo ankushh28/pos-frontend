@@ -56,7 +56,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
               <input
                 type="text"
                 placeholder="Search products..."
-                className="input-field pl-12"
+                className="input-fieldIcon pl-12"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -67,7 +67,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input-field pl-12 appearance-none"
+                className="input-fieldIcon pl-12 appearance-none"
               >
                 <option value="">All Categories</option>
                 {categories.map(category => (

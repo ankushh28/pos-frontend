@@ -21,7 +21,9 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
       <div className="bg-surface rounded-3xl shadow-strong max-w-md w-full animate-slide-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h3 className="font-display text-xl font-semibold text-gray-900">UPI Payment</h3>
+          <h3 className="font-display text-xl font-semibold text-gray-900">
+            UPI Payment
+          </h3>
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-accent-400 hover:text-accent-600 hover:bg-gray-50 transition-colors"
@@ -33,19 +35,21 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <div className="text-center mb-8">
-            <p className="font-display text-3xl font-semibold text-primary mb-2">₹{amount}</p>
+            <p className="font-display text-3xl font-semibold text-primary mb-2">
+              ₹{amount}
+            </p>
             <p className="text-accent-400">Show QR code to customer</p>
           </div>
 
           {/* QR Code Area */}
           <div className="bg-gray-50 rounded-2xl p-8 mb-8 flex items-center justify-center">
-            <div className="w-48 h-48 bg-surface rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-              <div className="text-center text-accent-400">
-                <QrCode className="h-16 w-16 mx-auto mb-3" />
-                <p className="text-sm">QR Code</p>
-                <p className="text-xs">₹{amount}</p>
-              </div>
-            </div>
+
+                <img
+                  src={"/file.svg"}
+                  alt="UPI QR Code"
+                  className=" h-[18rem] mx-auto mb-3"
+                />{" "}
+
           </div>
 
           <p className="text-center text-accent-400 text-sm mb-8">

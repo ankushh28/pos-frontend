@@ -65,7 +65,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onOTPRequired }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="input-field pl-12"
+                  className="input-fieldIcon"
                   required
                 />
               </div>
@@ -83,7 +83,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onOTPRequired }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="input-field pl-12 pr-12"
+                  className="input-fieldIcon pl-12 pr-12"
                   required
                 />
                 <button

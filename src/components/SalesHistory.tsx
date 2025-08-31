@@ -15,7 +15,7 @@ export const SalesHistory: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     paymentStatus: '' as '' | 'PENDING' | 'PAID' | 'CANCELLED',
-    from: '',
+    from: new Date().toISOString().split('T')[0],
     to: ''
   });
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export const SalesHistory: React.FC = () => {
             <select
               value={filters.paymentStatus}
               onChange={(e) => setFilters(prev => ({ ...prev, paymentStatus: e.target.value as any }))}
-              className="input-field"
+              className="input-fieldIcon"
             >
               <option value="">All Status</option>
               <option value="PAID">Paid</option>
@@ -183,7 +183,7 @@ export const SalesHistory: React.FC = () => {
               type="date"
               value={filters.from}
               onChange={(e) => setFilters(prev => ({ ...prev, from: e.target.value }))}
-              className="input-field"
+              className="input-fieldIcon"
               placeholder="From date"
             />
             
@@ -191,7 +191,7 @@ export const SalesHistory: React.FC = () => {
               type="date"
               value={filters.to}
               onChange={(e) => setFilters(prev => ({ ...prev, to: e.target.value }))}
-              className="input-field"
+              className="input-fieldIcon"
               placeholder="To date"
             />
           </div>
