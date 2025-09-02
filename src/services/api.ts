@@ -66,6 +66,12 @@ export class ApiService {
       }
       return data as T;
     } catch (e: any) {
+      // Surface aborted requests distinctly so callers can ignore them
+      if (e?.name === 'AbortError' || /aborted/i.test(e?.message || '')) {
+        const err: ApiError & { aborted?: boolean } = { message: e?.message || 'Request aborted', code: 'ABORTED' } as any;
+        (err as any).aborted = true;
+        throw err as any;
+      }
       if (e && e.message && e.status !== undefined) throw e as ApiError;
       const err: ApiError = { message: e?.message || 'Network error' };
       throw err;

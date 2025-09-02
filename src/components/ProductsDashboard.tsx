@@ -53,7 +53,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
   // Debounced search term to avoid hitting API on every keystroke
   const [debouncedQ, setDebouncedQ] = useState('');
   useEffect(() => {
-    const h = setTimeout(() => setDebouncedQ(listState.q || ''), 300);
+    const h = setTimeout(() => setDebouncedQ(listState.q || ''), 500);
     return () => clearTimeout(h);
   }, [listState.q]);
 
@@ -95,6 +95,8 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
         setTotalCount(0);
       }
     }).catch((err: any) => {
+      // Ignore intentionally aborted requests during fast typing
+      if (err?.code === 'ABORTED' || err?.aborted) return;
       setError(err?.message || 'Failed to load products');
     }).finally(() => setIsLoading(false));
 
@@ -203,7 +205,8 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
                 onChange={(e) => {
                   const val = e.target.value;
                   setSearchTerm(val);
-                  setListState(prev => ({ ...prev, q: val, page: 1 }));
+                  // Only trigger server search when 2+ chars; otherwise clear q and use full list
+                  setListState(prev => ({ ...prev, q: val.length >= 2 ? val : '', page: 1 }));
                 }}
               />
               {/* Category icon + dropdown on small screens */}

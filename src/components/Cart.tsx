@@ -91,7 +91,7 @@ export const Cart: React.FC<CartProps> = ({
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-accent-100 rounded-3xl mb-6">
             <ShoppingCart className="h-10 w-10 text-accent-400" />
