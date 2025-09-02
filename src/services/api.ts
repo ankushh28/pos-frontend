@@ -1,6 +1,6 @@
 import type { ApiError, ListParams } from '../types';
 
-const API_BASE_URL = 'http://localhost:5151/api/elite';
+const API_BASE_URL = 'https://pos-backend-3d2k.onrender.com/api/elite';
 
 export class ApiService {
   private static token: string | null = null;
