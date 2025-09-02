@@ -62,7 +62,9 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
     const sp = new URLSearchParams(window.location.search);
     sp.set('page', String(listState.page));
     sp.set('pageSize', String(listState.pageSize));
-    if (listState.q) sp.set('q', listState.q); else sp.delete('q');
+  if (listState.q) sp.set('q', listState.q); else sp.delete('q');
+  // Clear orders-specific query when on products page
+  sp.delete('ordersQ');
     if (listState.sortBy) sp.set('sortBy', listState.sortBy); else sp.delete('sortBy');
     if (listState.sortDir) sp.set('sortDir', listState.sortDir); else sp.delete('sortDir');
     window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`);

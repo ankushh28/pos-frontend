@@ -30,7 +30,7 @@ export const SalesHistory: React.FC = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(() => (new URLSearchParams(window.location.search).get('sortDir') as any) || 'desc');
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [q, setQ] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
+  const [q, setQ] = useState(() => new URLSearchParams(window.location.search).get('ordersQ') || '');
 
   // Push state -> URL and fetch (with abort on change)
   useEffect(() => {
@@ -39,7 +39,9 @@ export const SalesHistory: React.FC = () => {
     sp.set('pageSize', String(pageSize));
     sp.set('sortBy', sortBy);
     sp.set('sortDir', sortDir);
-    if (q) sp.set('q', q); else sp.delete('q');
+  // Use a dedicated query param for history search and clear global 'q'
+  sp.delete('q');
+  if (q) sp.set('ordersQ', q); else sp.delete('ordersQ');
     if (filters.paymentStatus) sp.set('paymentStatus', filters.paymentStatus); else sp.delete('paymentStatus');
     if (filters.from) sp.set('from', filters.from); else sp.delete('from');
     if (filters.to) sp.set('to', filters.to); else sp.delete('to');
