@@ -91,7 +91,7 @@ body {
 }
 
 .input-fieldIcon {
-  @apply w-full px-12 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200;
+  @apply px-12 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200;
 }
 /* Status badges */
 .status-paid {
