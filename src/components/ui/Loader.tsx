@@ -16,7 +16,7 @@ export const Loader: React.FC<LoaderProps> = ({ label = 'Loading...', fullScreen
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         {content}
       </div>
     );

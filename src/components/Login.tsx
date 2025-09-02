@@ -35,7 +35,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onOTPRequired }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-12">
