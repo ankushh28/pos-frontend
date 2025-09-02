@@ -9,6 +9,8 @@ export interface Product {
   description?: string;
   brand?: string;
   barcode?: string;
+  hsnSac?: string;
+  gst?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -27,6 +29,8 @@ export interface ProductFormData {
   description?: string;
   brand?: string;
   barcode?: string;
+  hsnSac?: string;
+  gst?: number;
 }
 
 export interface CartItem extends Product {

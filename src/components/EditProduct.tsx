@@ -21,7 +21,9 @@ export const EditProduct: React.FC<EditProductProps> = ({
     retailPrice: '',
     description: '',
     brand: '',
-    barcode: ''
+    barcode: '',
+    hsnSac: '',
+    gst: ''
   });
   
   const [sizes, setSizes] = useState<ProductSize[]>([{ size: '', quantity: 0 }]);
@@ -44,7 +46,9 @@ export const EditProduct: React.FC<EditProductProps> = ({
         retailPrice: product.retailPrice?.toString() || '',
         description: product.description || '',
         brand: product.brand || '',
-        barcode: product.barcode || ''
+        barcode: product.barcode || '',
+        hsnSac: product.hsnSac || '',
+        gst: (product.gst ?? '').toString()
       });
       
       setSizes(product.sizes && product.sizes.length > 0 
@@ -139,7 +143,9 @@ export const EditProduct: React.FC<EditProductProps> = ({
       sizes: validSizes,
       description: formData.description.trim(),
       brand: formData.brand.trim(),
-      barcode: formData.barcode.trim()
+      barcode: formData.barcode.trim(),
+      hsnSac: formData.hsnSac.trim() || undefined,
+      gst: formData.gst !== '' ? Number(formData.gst) : undefined
     };
 
     try {
@@ -253,6 +259,34 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 value={formData.barcode}
                 onChange={(e) => handleInputChange('barcode', e.target.value)}
                 placeholder="Enter barcode"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                HSN/SAC
+              </label>
+              <input
+                type="text"
+                value={formData.hsnSac}
+                onChange={(e) => handleInputChange('hsnSac', e.target.value)}
+                placeholder="Enter HSN/SAC code"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GST (%)
+              </label>
+              <input
+                type="number"
+                value={formData.gst}
+                onChange={(e) => handleInputChange('gst', e.target.value)}
+                placeholder="e.g., 18"
+                min="0"
+                step="0.01"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

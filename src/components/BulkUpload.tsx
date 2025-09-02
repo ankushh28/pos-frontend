@@ -76,6 +76,8 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
             <li><strong>description</strong> - Product description (optional)</li>
             <li><strong>brand</strong> - Brand name (optional)</li>
             <li><strong>barcode</strong> - Product barcode (optional)</li>
+            <li><strong>HSN/SAC</strong> - HSN or SAC code (optional)</li>
+            <li><strong>GST</strong> - GST percentage as a number, e.g., 18 (optional)</li>
           </ul>
         </div>
       </div>
