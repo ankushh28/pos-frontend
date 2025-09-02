@@ -202,6 +202,10 @@ export const ManageProducts: React.FC<ManageProductsProps> = ({
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-accent-400 h-5 w-5" />
             <input
+            style={{
+                  width: '100%',
+                  padding: '10px 45px',
+                }}
               type="text"
               placeholder="Search products..."
               className="input-fieldIcon pl-12"
@@ -213,6 +217,10 @@ export const ManageProducts: React.FC<ManageProductsProps> = ({
           <div className="relative">
             <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-accent-400 h-5 w-5" />
             <select
+            style={{
+                  width: '100%',
+                  padding: '10px 45px',
+                }}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="input-fieldIcon pl-12 appearance-none"
