@@ -37,17 +37,28 @@ function App() {
     setIsLoading(false);
   }, []);
 
+  // Fetch products when navigating to Manage Products and list is empty
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'manage-products' && products.length === 0) {
+      loadProducts();
+    }
+  }, [isAuthenticated, activeTab]);
+
   const loadProducts = async () => {
     try {
-  const response = await ApiService.getAllProducts();
-      console.log('API Response:', response);
-      if (response.success) {
-        const data = response.data;
-        console.log('Products data:', data);
-        setProducts(data);
-      } else {
-        console.error('API response not successful:', response);
+      const response = await ApiService.getAllProducts();
+      // Normalize possible response shapes
+      let list: Product[] = [];
+      if (Array.isArray(response)) {
+        list = response as Product[];
+      } else if (Array.isArray((response as any)?.data)) {
+        list = (response as any).data as Product[];
+      } else if (Array.isArray((response as any)?.products)) {
+        list = (response as any).products as Product[];
+      } else if ((response as any)?.success && Array.isArray((response as any)?.data?.products)) {
+        list = (response as any).data.products as Product[];
       }
+      setProducts(list);
     } catch (error) {
       console.error('Failed to load products:', error);
   setError((error as any)?.message || 'Failed to load products');

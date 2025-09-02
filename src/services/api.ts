@@ -1,6 +1,6 @@
 import type { ApiError, ListParams } from '../types';
 
-const API_BASE_URL = 'https://pos-backend-3d2k.onrender.com/api/elite';
+const API_BASE_URL = 'http://localhost:5151/api/elite';
 
 export class ApiService {
   private static token: string | null = null;
@@ -104,6 +104,13 @@ export class ApiService {
     const { page, pageSize, q, sortBy, sortDir } = { ...this.defaultList, ...params };
     const query = this.buildQuery({ page, limit: pageSize, q, sortBy, sortDir });
     return this.request<any>(`/product/all${query}`, { signal: options?.signal });
+  }
+
+  // Product search API (optimized, dedicated endpoint)
+  static async searchProducts(params: { q: string; page?: number; limit?: number }, options?: { signal?: AbortSignal }) {
+    const { q, page = 1, limit = 20 } = params;
+    const query = this.buildQuery({ q, page, limit });
+    return this.request<any>(`/product/search${query}`, { signal: options?.signal });
   }
 
   static async getProduct(id: string) {

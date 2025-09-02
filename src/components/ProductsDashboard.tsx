@@ -50,7 +50,14 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch from server when listState changes
+  // Debounced search term to avoid hitting API on every keystroke
+  const [debouncedQ, setDebouncedQ] = useState('');
+  useEffect(() => {
+    const h = setTimeout(() => setDebouncedQ(listState.q || ''), 300);
+    return () => clearTimeout(h);
+  }, [listState.q]);
+
+  // Fetch from server when listState changes (with debounced q)
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     sp.set('page', String(listState.page));
@@ -63,17 +70,20 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
   const controller = new AbortController();
     setIsLoading(true);
     setError(null);
-  ApiService.getAllProducts({
-      page: listState.page,
-      pageSize: listState.pageSize,
-      q: listState.q,
-      sortBy: listState.sortBy,
-      sortDir: listState.sortDir,
-  }, { signal: controller.signal }).then((res: any) => {
+  const fetcher = debouncedQ
+      ? ApiService.searchProducts({ q: debouncedQ, page: listState.page, limit: listState.pageSize }, { signal: controller.signal })
+      : ApiService.getAllProducts({
+          page: listState.page,
+          pageSize: listState.pageSize,
+          sortBy: listState.sortBy,
+          sortDir: listState.sortDir,
+        }, { signal: controller.signal });
+
+    Promise.resolve(fetcher).then((res: any) => {
       // Support both old and paginated shapes
       if (Array.isArray(res?.data)) {
         setServerProducts(res.data as Product[]);
-        setTotalCount(res.totalCount || res.data.length);
+        setTotalCount(res.totalCount || res.pagination?.totalCount || res.data.length);
       } else if (Array.isArray(res)) {
         setServerProducts(res as Product[]);
         setTotalCount((res as Product[]).length);
@@ -89,7 +99,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
     }).finally(() => setIsLoading(false));
 
   return () => controller.abort();
-  }, [listState.page, listState.pageSize, listState.q, listState.sortBy, listState.sortDir]);
+  }, [listState.page, listState.pageSize, debouncedQ, listState.sortBy, listState.sortDir]);
 
   const dataSource: Product[] = serverProducts ?? products ?? [];
 
@@ -119,7 +129,10 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
   }));
 
   const filteredProducts = normalizedProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    // If server searching is active (debouncedQ), don't filter by name again client-side
+    const matchesSearch = debouncedQ
+      ? true
+      : product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === '' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
