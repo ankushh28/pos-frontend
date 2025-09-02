@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ShoppingCart, Plus, Minus, Check, Trash2, Phone, CreditCard, Banknote, Percent, FileText } from 'lucide-react';
 import { CartItem } from '../types';
 import { UPIPaymentModal } from './UPIPaymentModal';
+import { ConfirmDialog } from './ui/ConfirmDialog';
+import { useToast } from './ui/Toast';
 
 interface CartProps {
   cartItems: CartItem[];
@@ -22,12 +24,14 @@ export const Cart: React.FC<CartProps> = ({
   onRemoveItem,
   onConfirmSale
 }) => {
+  const { show } = useToast();
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'UPI'>('CASH');
   const [paymentStatus, setPaymentStatus] = useState<'PENDING' | 'PAID'>('PENDING');
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
   const [showUPIModal, setShowUPIModal] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.retailPrice * item.cartQuantity,
@@ -43,6 +47,10 @@ export const Cart: React.FC<CartProps> = ({
   ) - discountAmount;
 
   const handleConfirmSale = () => {
+    if (!cartItems.length) {
+      show('Cart is empty. Add items before checkout.', { type: 'warning' });
+      return;
+    }
     const orderData = {
       customerPhone: customerPhone.trim() || undefined,
       paymentMethod,
@@ -63,7 +71,7 @@ export const Cart: React.FC<CartProps> = ({
     const orderData = {
       customerPhone: customerPhone.trim() || undefined,
       paymentMethod: 'UPI' as const,
-      paymentStatus,
+      paymentStatus: 'PAID' as const,
       discount: discountAmount || undefined,
       notes: notes.trim() || undefined,
     };
@@ -78,7 +86,7 @@ export const Cart: React.FC<CartProps> = ({
     setDiscount('');
     setNotes('');
     setPaymentMethod('CASH');
-    setPaymentStatus('PENDING');
+    setPaymentStatus('PAID');
   };
 
   if (cartItems.length === 0) {
@@ -122,7 +130,7 @@ export const Cart: React.FC<CartProps> = ({
                     </div>
                     
                     <button
-                      onClick={() => onRemoveItem(item._id)}
+                      onClick={() => setConfirmRemoveId(item._id)}
                       className="p-2 text-accent-400 hover:text-primary hover:bg-red-50 rounded-xl transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -327,6 +335,18 @@ export const Cart: React.FC<CartProps> = ({
         onClose={() => setShowUPIModal(false)}
         onReceived={handleUPIPaymentReceived}
         amount={totalAmount}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmRemoveId}
+        title="Remove item?"
+        message="This will remove the item from the cart."
+        confirmText="Remove"
+        onCancel={() => setConfirmRemoveId(null)}
+        onConfirm={() => {
+          if (confirmRemoveId) onRemoveItem(confirmRemoveId);
+          setConfirmRemoveId(null);
+        }}
       />
     </>
   );

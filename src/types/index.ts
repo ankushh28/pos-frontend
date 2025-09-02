@@ -1,6 +1,6 @@
 export interface Product {
   _id: string;
-  id?: number; // For backward compatibility
+  id?: string | number; // For backward compatibility
   name: string;
   category: string;
   wholesalePrice: number;
@@ -102,4 +102,28 @@ export interface AuthResponse {
 export interface VerifyOTPResponse {
   success: boolean;
   token: string;
+}
+
+// Shared list/pagination types
+export type SortDir = 'asc' | 'desc';
+
+export interface ListParams {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  sortBy?: string;
+  sortDir?: SortDir;
+}
+
+export interface PaginationResult {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface ApiError {
+  status?: number;
+  code?: string;
+  message: string;
 }

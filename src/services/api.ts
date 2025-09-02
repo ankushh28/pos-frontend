@@ -1,7 +1,14 @@
+import type { ApiError, ListParams } from '../types';
+
 const API_BASE_URL = 'https://pos-backend-3d2k.onrender.com/api/elite';
 
 export class ApiService {
   private static token: string | null = null;
+  static readonly defaultList: Required<Pick<ListParams, 'page' | 'pageSize' | 'sortDir'>> = {
+    page: 1,
+    pageSize: 20,
+    sortDir: 'desc',
+  };
 
   static setToken(token: string) {
     this.token = token;
@@ -20,197 +27,125 @@ export class ApiService {
     localStorage.removeItem('auth-token');
   }
 
-  static getAuthHeaders() {
+  static getAuthHeaders(): Record<string, string> {
     const token = this.getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { Authorization: `Bearer ${token}` } : {} as Record<string, string>;
+  }
+
+  // Internal unified fetch
+  private static async request<T>(path: string, init?: RequestInit): Promise<T> {
+    try {
+      const isFormData = typeof FormData !== 'undefined' && (init?.body instanceof FormData);
+      const baseHeaders: Record<string, string> = { ...this.getAuthHeaders() };
+      // Only set JSON content-type when not sending FormData and when caller didn't override
+      if (!isFormData) {
+        const provided = init?.headers as Record<string, string> | undefined;
+        const hasCT = provided && Object.keys(provided).some(k => k.toLowerCase() === 'content-type');
+        if (!hasCT) baseHeaders['Content-Type'] = 'application/json';
+      }
+      const headers = { ...baseHeaders, ...(init?.headers as any) } as HeadersInit;
+
+      const res = await fetch(`${API_BASE_URL}${path}`, {
+        ...init,
+        headers,
+      });
+
+      if (res.status === 401) {
+        this.clearToken();
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await res.json() : await res.text();
+
+      if (!res.ok) {
+        const err: ApiError = {
+          status: res.status,
+          message: (data && (data.message || data.error)) || 'Request failed',
+        };
+        throw err;
+      }
+      return data as T;
+    } catch (e: any) {
+      if (e && e.message && e.status !== undefined) throw e as ApiError;
+      const err: ApiError = { message: e?.message || 'Network error' };
+      throw err;
+    }
   }
 
   // Authentication APIs
   static async login(email: string, password: string) {
-    const response = await fetch(`${API_BASE_URL}/user/login`, {
+    return this.request<any>('/user/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-
-    if (!response.ok) {
-      throw new Error('Login failed');
-    }
-
-    return response.json();
   }
 
   static async verifyOTP(email: string, otp: string) {
-    const response = await fetch(`${API_BASE_URL}/user/verify-otp`, {
+    return this.request<any>('/user/verify-otp', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp }),
     });
-
-    if (!response.ok) {
-      throw new Error('OTP verification failed');
-    }
-
-    return response.json();
   }
 
   // Product APIs
-  static async getAllProducts() {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/all`, {
-      headers,
+  static buildQuery(params?: Record<string, any>) {
+    const q = new URLSearchParams();
+    Object.entries(params || {}).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === '') return;
+      q.append(k, String(v));
     });
+    const qs = q.toString();
+    return qs ? `?${qs}` : '';
+  }
 
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  static async getAllProducts(params?: ListParams, options?: { signal?: AbortSignal }) {
+    const { page, pageSize, q, sortBy, sortDir } = { ...this.defaultList, ...params };
+    const query = this.buildQuery({ page, limit: pageSize, q, sortBy, sortDir });
+    return this.request<any>(`/product/all${query}`, { signal: options?.signal });
   }
 
   static async getProduct(id: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/${id}`, {
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/product/${id}`);
   }
 
   static async addProduct(productData: any) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/add`, {
+    return this.request<any>('/product/add', {
       method: 'POST',
-      headers,
       body: JSON.stringify(productData),
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
   }
 
   static async updateProduct(id: string, productData: any) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/update/${id}`, {
+    return this.request<any>(`/product/update/${id}`, {
       method: 'PUT',
-      headers,
       body: JSON.stringify(productData),
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
   }
 
   static async deleteProduct(id: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/delete/${id}`, {
-      method: 'DELETE',
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/product/delete/${id}`, { method: 'DELETE' });
   }
 
   static async bulkUploadProducts(file: File) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const headers = {
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/bulk/add`, {
+    // For multipart, override default content type
+    return this.request<any>('/product/bulk/add', {
       method: 'POST',
-      headers,
-      body: formData,
+      headers: { ...this.getAuthHeaders() },
+      body: formData as any,
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
   }
 
   static async getUploadBatches() {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/bulk/batches`, {
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>('/product/bulk/batches');
   }
 
   static async rollbackUpload(uploadId: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/product/bulk/rollback/${uploadId}`, {
-      method: 'DELETE',
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/product/bulk/rollback/${uploadId}`, { method: 'DELETE' });
   }
 
   // Order APIs
@@ -221,129 +156,46 @@ export class ApiService {
     discount?: number;
     notes?: string;
   }) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    return this.request<any>('/orders', {
       method: 'POST',
-      headers,
       body: JSON.stringify(orderData),
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
   }
 
   static async getAllOrders(params?: {
     from?: string;
     to?: string;
     paymentStatus?: 'PENDING' | 'PAID' | 'CANCELLED';
-    page?: number;
-    limit?: number;
-  }) {
-    const queryParams = new URLSearchParams();
-    if (params?.from) queryParams.append('from', params.from);
-    if (params?.to) queryParams.append('to', params.to);
-    if (params?.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders?${queryParams}`, {
-      headers,
+  } & ListParams, options?: { signal?: AbortSignal }) {
+    const { page, pageSize, sortBy, sortDir } = { ...this.defaultList, ...params };
+    const query = this.buildQuery({
+      from: params?.from,
+      to: params?.to,
+      paymentStatus: params?.paymentStatus,
+      page,
+      limit: pageSize,
+      sortBy,
+      sortDir,
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+    return this.request<any>(`/orders${query}`, { signal: options?.signal });
   }
 
   static async getOrder(id: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/orders/${id}`);
   }
 
   static async updateOrder(id: string, orderData: any) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+    return this.request<any>(`/orders/${id}`, {
       method: 'PUT',
-      headers,
       body: JSON.stringify(orderData),
     });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
   }
 
   static async deleteOrder(id: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
-      method: 'DELETE',
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/orders/${id}`, { method: 'DELETE' });
   }
 
   static async cancelOrder(id: string) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...this.getAuthHeaders()
-    };
-
-    const response = await fetch(`${API_BASE_URL}/orders/${id}/cancel`, {
-      method: 'PUT',
-      headers,
-    });
-
-    if (response.status === 401) {
-      this.clearToken();
-      throw new Error('Authentication required');
-    }
-
-    return response.json();
+  return this.request<any>(`/orders/${id}/cancel`, { method: 'PUT' });
   }
 }

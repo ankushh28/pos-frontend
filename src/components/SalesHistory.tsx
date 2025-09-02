@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, DollarSign, TrendingUp, ShoppingBag, Phone, Filter, CreditCard, Banknote, Edit, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, DollarSign, TrendingUp, ShoppingBag, Phone, CreditCard, Banknote, Edit, X, Search } from 'lucide-react';
 import { Order } from '../types';
 import { ApiService } from '../services/api';
 import { EditOrder } from './EditOrder';
+import { Loader } from './ui/Loader';
+import { ErrorBanner } from './ui/ErrorBanner';
 
 export const SalesHistory: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -13,35 +15,83 @@ export const SalesHistory: React.FC = () => {
     avgOrderPrice: 0
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    paymentStatus: '' as '' | 'PENDING' | 'PAID' | 'CANCELLED',
-    from: new Date().toISOString().split('T')[0],
-    to: ''
+  const [filters, setFilters] = useState(() => {
+    const sp = new URLSearchParams(window.location.search);
+    return {
+      paymentStatus: (sp.get('paymentStatus') as '' | 'PENDING' | 'PAID' | 'CANCELLED') || '',
+      from: sp.get('from') || '',
+      to: sp.get('to') || ''
+    };
   });
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [page, setPage] = useState(() => parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10) || 1);
+  const [pageSize, setPageSize] = useState(() => parseInt(new URLSearchParams(window.location.search).get('pageSize') || '10', 10) || 10);
+  const [sortBy, setSortBy] = useState<'date' | 'total' | 'profit'>(() => (new URLSearchParams(window.location.search).get('sortBy') as any) || 'date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>(() => (new URLSearchParams(window.location.search).get('sortDir') as any) || 'desc');
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [q, setQ] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
 
+  // Push state -> URL and fetch (with abort on change)
   useEffect(() => {
-    loadOrders();
-  }, [filters]);
+    const sp = new URLSearchParams(window.location.search);
+    sp.set('page', String(page));
+    sp.set('pageSize', String(pageSize));
+    sp.set('sortBy', sortBy);
+    sp.set('sortDir', sortDir);
+    if (q) sp.set('q', q); else sp.delete('q');
+    if (filters.paymentStatus) sp.set('paymentStatus', filters.paymentStatus); else sp.delete('paymentStatus');
+    if (filters.from) sp.set('from', filters.from); else sp.delete('from');
+    if (filters.to) sp.set('to', filters.to); else sp.delete('to');
+    window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`);
 
-  const loadOrders = async () => {
-    setIsLoading(true);
-    try {
-      const params: any = {};
-      if (filters.paymentStatus) params.paymentStatus = filters.paymentStatus;
-      if (filters.from) params.from = filters.from;
-      if (filters.to) params.to = filters.to;
-
-      const response = await ApiService.getAllOrders(params);
-      if (response.orders) {
-        setOrders(response.orders);
-        setAnalytics(response.analytics);
+    const controller = new AbortController();
+    const run = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await ApiService.getAllOrders({
+          paymentStatus: (filters.paymentStatus || undefined) as 'PENDING' | 'PAID' | 'CANCELLED' | undefined,
+          from: filters.from || undefined,
+          to: filters.to || undefined,
+          page,
+          pageSize,
+          sortBy,
+          sortDir,
+        }, { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        if (response?.orders) {
+          setOrders(response.orders);
+          setAnalytics(response.analytics || {
+            totalOrders: response.orders.length,
+            totalProfit: response.orders.reduce((s: number, o: Order) => s + (o.profit || 0), 0),
+            totalRevenue: response.orders.reduce((s: number, o: Order) => s + (o.total || 0), 0),
+            avgOrderPrice: response.orders.length ? response.orders.reduce((s: number, o: Order) => s + (o.total || 0), 0) / response.orders.length : 0,
+          });
+          setTotalCount(response.pagination?.totalCount || response.orders.length);
+        } else if (Array.isArray(response)) {
+          setOrders(response as Order[]);
+          setTotalCount((response as Order[]).length);
+        } else {
+          setOrders([]);
+          setTotalCount(0);
+        }
+      } catch (error: any) {
+        if (controller.signal.aborted) return;
+        console.error('Failed to load orders:', error);
+        setError((error && (error as any).message) || 'Failed to load orders');
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to load orders:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+    run();
+    return () => controller.abort();
+  }, [filters, page, pageSize, sortBy, sortDir, q]);
+
+  // loadOrders retained for EditOrder callbacks
+  const loadOrders = async () => {
+    // Nudge state to trigger the main effect without changing values
+    setPage(p => p);
   };
 
   const formatDate = (dateString: string) => {
@@ -90,13 +140,18 @@ export const SalesHistory: React.FC = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const filteredOrders = orders.filter((o) => {
+    if (!q) return true;
+    const ql = q.toLowerCase();
+    const idMatch = o._id?.toLowerCase().includes(ql);
+    const phoneMatch = (o.customerPhone || '').toLowerCase().includes(ql);
+    const itemMatch = o.items?.some((it) => {
+      const name = typeof it.product === 'object' ? it.product.name : '';
+      return (name || '').toLowerCase().includes(ql);
+    });
+    return idMatch || phoneMatch || itemMatch;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,6 +164,12 @@ export const SalesHistory: React.FC = () => {
       </div>
 
       <div className="p-6 pb-24">
+        {isLoading && (
+          <div className="mb-4"><Loader label="Loading orders..." /></div>
+        )}
+        {error && (
+          <div className="mb-4"><ErrorBanner message={error} onRetry={() => loadOrders()} /></div>
+        )}
         {/* Analytics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="card p-6">
@@ -160,45 +221,108 @@ export const SalesHistory: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="card p-6 mb-8">
-          <div className="flex items-center mb-4">
-            <Filter className="h-5 w-5 text-accent-400 mr-2" />
-            <h3 className="font-display font-medium text-gray-900">Filters</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Filters – single-line toolbar (scrollable on small screens) */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 bg-surface border border-gray-100 rounded-2xl px-3 py-3 overflow-x-auto flex-nowrap whitespace-nowrap">
+            {/* Search */}
+            <div className="relative flex-1 max-w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-accent-400 h-4 w-4" />
+              <input
+                type="text"
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                placeholder="Search orders..."
+                className="input-fieldIcon h-10 py-2 pl-9"
+                aria-label="Search orders"
+              />
+            </div>
+
+            {/* Status segmented tabs */}
+            <div className="flex items-center gap-1 shrink-0">
+              {[
+                { label: 'All', value: '' },
+                { label: 'Paid', value: 'PAID' },
+                { label: 'Pending', value: 'PENDING' },
+                { label: 'Cancelled', value: 'CANCELLED' },
+              ].map(tab => (
+                <button
+                  key={tab.label}
+                  onClick={() => { setFilters(prev => ({ ...prev, paymentStatus: tab.value as any })); setPage(1); }}
+                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    filters.paymentStatus === tab.value
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'bg-surface text-accent-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Date range */}
+            <div className="flex items-center gap-2 shrink-0">
+              <input
+                type="date"
+                value={filters.from}
+                onChange={(e) => { setFilters(prev => ({ ...prev, from: e.target.value })); setPage(1); }}
+                className="input-fieldIcon h-10 py-2"
+                aria-label="From date"
+              />
+              <span className="text-accent-300">–</span>
+              <input
+                type="date"
+                value={filters.to}
+                onChange={(e) => { setFilters(prev => ({ ...prev, to: e.target.value })); setPage(1); }}
+                className="input-fieldIcon h-10 py-2"
+                aria-label="To date"
+              />
+            </div>
+
+            {/* Sort */}
             <select
-              value={filters.paymentStatus}
-              onChange={(e) => setFilters(prev => ({ ...prev, paymentStatus: e.target.value as any }))}
-              className="input-fieldIcon"
+              className="input-fieldIcon h-10 py-2 shrink-0"
+              value={`${sortBy}:${sortDir}`}
+              onChange={(e) => {
+                const [sb, sd] = e.target.value.split(':');
+                setSortBy(sb as any);
+                setSortDir(sd as any);
+              }}
+              aria-label="Sort orders"
             >
-              <option value="">All Status</option>
-              <option value="PAID">Paid</option>
-              <option value="PENDING">Pending</option>
-              <option value="CANCELLED">Cancelled</option>
+              <option value="date:desc">Newest</option>
+              <option value="date:asc">Oldest</option>
+              <option value="total:desc">Amount ↓</option>
+              <option value="total:asc">Amount ↑</option>
+              <option value="profit:desc">Profit ↓</option>
+              <option value="profit:asc">Profit ↑</option>
             </select>
-            
-            <input
-              type="date"
-              value={filters.from}
-              onChange={(e) => setFilters(prev => ({ ...prev, from: e.target.value }))}
-              className="input-fieldIcon"
-              placeholder="From date"
-            />
-            
-            <input
-              type="date"
-              value={filters.to}
-              onChange={(e) => setFilters(prev => ({ ...prev, to: e.target.value }))}
-              className="input-fieldIcon"
-              placeholder="To date"
-            />
+
+            {/* Page size */}
+            <select
+              className="input-fieldIcon h-10 py-2 shrink-0"
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+              aria-label="Items per page"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+
+            {/* Reset */}
+            {(q || filters.paymentStatus || filters.from || filters.to) && (
+              <button
+                onClick={() => { setQ(''); setFilters({ paymentStatus: '', from: '', to: '' }); setPage(1); }}
+                className="ml-auto px-3 py-2 text-sm rounded-lg border border-gray-200 text-accent-600 hover:bg-gray-50 shrink-0"
+              >
+                Reset
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Orders List */}
-        {orders.length === 0 ? (
+    {/* Orders List */}
+    {!isLoading && filteredOrders.length === 0 ? (
           <div className="text-center py-20">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-accent-100 rounded-3xl mb-6">
               <ShoppingBag className="h-8 w-8 text-accent-400" />
@@ -208,7 +332,7 @@ export const SalesHistory: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {orders.map((order) => (
+      {filteredOrders.map((order) => (
               <div key={order._id} className="card p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center space-x-2">
@@ -297,6 +421,30 @@ export const SalesHistory: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalCount > 0 && totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              className="px-4 py-2 rounded-lg border border-gray-200 text-accent-600 disabled:opacity-50"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <div className="text-sm text-accent-500">
+              Page {page} of {totalPages}
+              <span className="ml-2 text-accent-400">• Showing {Math.min((page - 1) * pageSize + 1, totalCount)}–{Math.min(page * pageSize, totalCount)} of {totalCount}</span>
+            </div>
+            <button
+              className="px-4 py-2 rounded-lg border border-gray-200 text-accent-600 disabled:opacity-50"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => p + 1)}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

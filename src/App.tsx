@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Login } from './components/Login';
 import { VerifyOTP } from './components/VerifyOTP';
 import { ProductsDashboard } from './components/ProductsDashboard';
 import { Cart } from './components/Cart';
 import { SalesHistory } from './components/SalesHistory';
-import { AddProduct } from './components/AddProduct';
+// import { AddProduct } from './components/AddProduct';
 import { ManageProducts } from './components/ManageProducts';
 import { Navigation } from './components/Navigation';
 import { ApiService } from './services/api';
-import { Product, CartItem, Order, ActiveTab } from './types';
+import { Product, CartItem, ActiveTab } from './types';
+import { Loader } from './components/ui/Loader';
+import { ErrorBanner } from './components/ui/ErrorBanner';
+import { useToast } from './components/ui/Toast';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function App() {
+  const { show } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showOTPVerification, setShowOTPVerification] = useState(false);
@@ -18,6 +23,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -33,7 +39,7 @@ function App() {
 
   const loadProducts = async () => {
     try {
-      const response = await ApiService.getAllProducts();
+  const response = await ApiService.getAllProducts();
       console.log('API Response:', response);
       if (response.success) {
         const data = response.data;
@@ -44,6 +50,7 @@ function App() {
       }
     } catch (error) {
       console.error('Failed to load products:', error);
+  setError((error as any)?.message || 'Failed to load products');
     }
   };
 
@@ -52,7 +59,7 @@ function App() {
     setShowOTPVerification(true);
   };
 
-  const handleOTPVerified = (token: string) => {
+  const handleOTPVerified = (_token: string) => {
     setIsAuthenticated(true);
     setShowOTPVerification(false);
     setLoginEmail('');
@@ -75,7 +82,10 @@ function App() {
 
   const handleAddToCart = (product: Product, size: string) => {
     const sizeStock = product.sizes.find(s => s.size === size)?.quantity || 0;
-    if (sizeStock === 0) return;
+    if (sizeStock === 0) {
+      show('Selected size is out of stock', { type: 'warning' });
+      return;
+    }
     
     setCartItems(prev => {
       const existingItem = prev.find(item => item._id === product._id && item.selectedSize === size);
@@ -88,6 +98,7 @@ function App() {
               : item
           );
         }
+        show('No more stock available for this size', { type: 'warning' });
         return prev;
       } else {
         return [...prev, { ...product, cartQuantity: 1, selectedSize: size, quantity: sizeStock }];
@@ -119,7 +130,10 @@ function App() {
     discount?: number;
     notes?: string;
   }) => {
-    if (cartItems.length === 0) return;
+    if (cartItems.length === 0) {
+      show('Cart is empty. Add items before checkout.', { type: 'warning' });
+      return;
+    }
 
     // Create order items for API
     const orderItems = cartItems.map(item => ({
@@ -148,13 +162,13 @@ function App() {
         setActiveTab('history');
         
         // Show success feedback
-        alert('Order created successfully!');
+        show('Order created successfully', { type: 'success' });
       } else {
-        alert('Failed to create order');
+        show('Failed to create order', { type: 'error' });
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Error creating order. Please try again.');
+      show('Error creating order. Please try again.', { type: 'error' });
     }
   };
 
@@ -163,11 +177,7 @@ function App() {
 
   // Show loading screen while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <Loader fullScreen label="Loading..." />;
   }
 
   // Show OTP verification screen
@@ -212,22 +222,30 @@ function App() {
           />
         );
       case 'history':
-        return <SalesHistory />;
+        return (
+          <ProtectedRoute fallback={<Login onLogin={handleOTPVerified} onOTPRequired={handleOTPRequired} />}>
+            <SalesHistory />
+          </ProtectedRoute>
+        );
       case 'manage-products':
         return (
-          <ManageProducts
-            products={products}
-            onProductsChange={loadProducts}
-          />
+          <ProtectedRoute fallback={<Login onLogin={handleOTPVerified} onOTPRequired={handleOTPRequired} />}>
+            <ManageProducts
+              products={products}
+              onProductsChange={loadProducts}
+            />
+          </ProtectedRoute>
         );
       default:
         return (
-          <ProductsDashboard 
-            products={products} 
-            onAddToCart={handleAddToCart}
-            onNavigate={setActiveTab}
-            onLogout={handleLogout}
-          />
+          <ProtectedRoute fallback={<Login onLogin={handleOTPVerified} onOTPRequired={handleOTPRequired} />}>
+            <ProductsDashboard 
+              products={products} 
+              onAddToCart={handleAddToCart}
+              onNavigate={setActiveTab}
+              onLogout={handleLogout}
+            />
+          </ProtectedRoute>
         );
     }
   };
@@ -235,6 +253,9 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md lg:max-w-[100%] mx-auto lg:flex-col lg:flex lg:justify-between bg-surface min-h-screen lg:shadow-strong">
+        {error && (
+          <div className="p-4"><ErrorBanner message={error} onRetry={() => { setError(null); loadProducts(); }} /></div>
+        )}
         {renderActiveTab()}
         
         <Navigation
