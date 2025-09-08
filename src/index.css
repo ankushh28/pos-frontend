@@ -87,11 +87,38 @@ body {
 
 /* Input styles */
 .input-field {
-  @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200;
+  @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200 text-base;
 }
 
 .input-fieldIcon {
-  @apply px-10 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200;
+  @apply w-full px-12 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200 text-base;
+}
+
+.input-compact {
+  @apply w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus-ring transition-all duration-200 text-sm;
+}
+
+/* Responsive input adjustments */
+@media (max-width: 640px) {
+  .input-field, .input-fieldIcon {
+    @apply py-3.5 text-base;
+  }
+  
+  .input-fieldIcon {
+    @apply pl-11;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .input-field, .input-fieldIcon {
+    @apply py-3 text-base;
+  }
+}
+
+@media (min-width: 1025px) {
+  .input-field, .input-fieldIcon {
+    @apply py-3 text-base;
+  }
 }
 /* Status badges */
 .status-paid {

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, DollarSign, TrendingUp, ShoppingBag, Phone, CreditCard, Banknote, Edit, X, Search } from 'lucide-react';
+import { Calendar, DollarSign, TrendingUp, ShoppingBag, Phone, CreditCard, Banknote, Edit, X, Search, FileText } from 'lucide-react';
 import { Order } from '../types';
 import { ApiService } from '../services/api';
 import { EditOrder } from './EditOrder';
 import { Loader } from './ui/Loader';
 import { ErrorBanner } from './ui/ErrorBanner';
+import { useToast } from './ui/Toast';
+import { InvoiceGenerator } from '../utils/invoiceGenerator';
 
 export const SalesHistory: React.FC = () => {
+  const { show } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [analytics, setAnalytics] = useState({
     totalOrders: 0,
@@ -31,6 +34,7 @@ export const SalesHistory: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [q, setQ] = useState(() => new URLSearchParams(window.location.search).get('ordersQ') || '');
+  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
 
   // Push state -> URL and fetch (with abort on change)
   useEffect(() => {
@@ -128,6 +132,20 @@ export const SalesHistory: React.FC = () => {
     } catch (error) {
       console.error('Failed to cancel order:', error);
       alert('Failed to cancel order');
+    }
+  };
+
+  const handleDownloadInvoice = async (orderId: string) => {
+    setDownloadingInvoice(orderId);
+    try {
+      const invoiceData = await ApiService.getInvoiceData(orderId);
+      await InvoiceGenerator.downloadInvoice(orderId, invoiceData);
+      show('Invoice generated successfully', { type: 'success' });
+    } catch (error) {
+      console.error('Failed to generate invoice:', error);
+      show('Failed to generate invoice', { type: 'error' });
+    } finally {
+      setDownloadingInvoice(null);
     }
   };
 
@@ -234,7 +252,7 @@ export const SalesHistory: React.FC = () => {
                 value={q}
                 onChange={(e) => { setQ(e.target.value); setPage(1); }}
                 placeholder="Search orders..."
-                className="input-fieldIcon h-10 py-2 pl-9"
+                className="input-fieldIcon pl-10"
                 aria-label="Search orders"
               />
             </div>
@@ -267,7 +285,7 @@ export const SalesHistory: React.FC = () => {
                 type="date"
                 value={filters.from}
                 onChange={(e) => { setFilters(prev => ({ ...prev, from: e.target.value })); setPage(1); }}
-                className="input-fieldIcon h-10 py-2"
+                className="input-compact"
                 aria-label="From date"
               />
               <span className="text-accent-300">–</span>
@@ -275,14 +293,14 @@ export const SalesHistory: React.FC = () => {
                 type="date"
                 value={filters.to}
                 onChange={(e) => { setFilters(prev => ({ ...prev, to: e.target.value })); setPage(1); }}
-                className="input-fieldIcon h-10 py-2"
+                className="input-compact"
                 aria-label="To date"
               />
             </div>
 
             {/* Sort */}
             <select
-              className="input-fieldIcon h-10 py-2 shrink-0"
+              className="input-compact shrink-0"
               value={`${sortBy}:${sortDir}`}
               onChange={(e) => {
                 const [sb, sd] = e.target.value.split(':');
@@ -301,7 +319,7 @@ export const SalesHistory: React.FC = () => {
 
             {/* Page size */}
             <select
-              className="input-fieldIcon h-10 py-2 shrink-0"
+              className="input-compact shrink-0"
               value={pageSize}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               aria-label="Items per page"
@@ -404,6 +422,23 @@ export const SalesHistory: React.FC = () => {
                   
                   {order.paymentStatus !== 'CANCELLED' && (
                     <div className="flex space-x-3 mt-4">
+                      <button
+                        onClick={() => handleDownloadInvoice(order._id)}
+                        disabled={downloadingInvoice === order._id}
+                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50"
+                      >
+                        {downloadingInvoice === order._id ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Generating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="h-4 w-4" />
+                            <span>Invoice</span>
+                          </>
+                        )}
+                      </button>
                       <button
                         onClick={() => setEditingOrderId(order._id)}
                         className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm font-medium"

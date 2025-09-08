@@ -185,7 +185,7 @@ export const Cart: React.FC<CartProps> = ({
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="Phone number (optional)"
-                    className="input-fieldIcon"
+                    className="input-fieldIcon pl-12"
                   />
                 </div>
               </div>

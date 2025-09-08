@@ -196,10 +196,6 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
             <div id="mobile-category-filter" className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-accent-400 h-5 w-5" />
               <input
-                style={{
-                  width: '100%',
-                  padding: '10px 45px',
-                }}
                 type="text"
                 placeholder="Search products..."
                 className="input-fieldIcon pl-12"
@@ -247,10 +243,6 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
             <div className="relative hidden lg:block">
               <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-accent-400 h-5 w-5" />
               <select
-              style={{
-                  width: '100%',
-                  padding: '10px 45px',
-                }}
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 disabled={!hasCategoryFilter}
@@ -275,7 +267,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
                   const [sb, sd] = e.target.value.split(':');
                   setListState(prev => ({ ...prev, sortBy: sb, sortDir: sd as 'asc' | 'desc' }));
                 }}
-                className="input-fieldIcon h-10"
+                className="input-compact"
                 aria-label="Sort by"
               >
                 <option value="name:asc">Name ↑</option>
@@ -291,7 +283,7 @@ export const ProductsDashboard: React.FC<ProductsDashboardProps> = ({
               <select
                 value={listState.pageSize}
                 onChange={(e) => setListState(prev => ({ ...prev, pageSize: Number(e.target.value), page: 1 }))}
-                className="input-fieldIcon h-10"
+                className="input-compact"
                 aria-label="Items per page"
               >
                 <option value={8}>8</option>

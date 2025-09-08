@@ -172,7 +172,7 @@ export const EditOrder: React.FC<EditOrderProps> = ({ orderId, onBack, onOrderUp
                   type="tel"
                   value={formData.customerPhone}
                   onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="input-fieldIcon pl-12"
                   placeholder="Enter phone number"
                 />
               </div>
@@ -185,7 +185,7 @@ export const EditOrder: React.FC<EditOrderProps> = ({ orderId, onBack, onOrderUp
               <select
                 value={formData.paymentStatus}
                 onChange={(e) => setFormData(prev => ({ ...prev, paymentStatus: e.target.value as any }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field"
               >
                 <option value="PENDING">Pending</option>
                 <option value="PAID">Paid</option>
@@ -234,7 +234,7 @@ export const EditOrder: React.FC<EditOrderProps> = ({ orderId, onBack, onOrderUp
                 min="0"
                 value={formData.discount}
                 onChange={(e) => setFormData(prev => ({ ...prev, discount: Number(e.target.value) }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field"
                 placeholder="Enter discount amount"
               />
             </div>
@@ -247,7 +247,7 @@ export const EditOrder: React.FC<EditOrderProps> = ({ orderId, onBack, onOrderUp
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-field resize-none"
                 placeholder="Add notes..."
               />
             </div>

@@ -211,4 +211,9 @@ export class ApiService {
   static async cancelOrder(id: string) {
   return this.request<any>(`/orders/${id}/cancel`, { method: 'PUT' });
   }
+
+  // Invoice API
+  static async getInvoiceData(orderId: string) {
+    return this.request<InvoiceData>(`/orders/${orderId}/invoice`);
+  }
 }

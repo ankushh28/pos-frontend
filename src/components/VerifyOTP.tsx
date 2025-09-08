@@ -115,7 +115,7 @@ export const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onVerified, onBack 
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-center text-xl font-semibold border border-gray-200 rounded-xl focus-ring bg-white"
+                    className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-semibold border border-gray-200 rounded-xl focus-ring bg-white"
                   />
                 ))}
               </div>
