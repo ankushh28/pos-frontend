@@ -187,7 +187,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Enter product name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -202,7 +202,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 value={formData.brand}
                 onChange={(e) => handleInputChange('brand', e.target.value)}
                 placeholder="Enter brand name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
               />
             </div>
 
@@ -216,7 +216,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 <select
                   value={formData.category}
                   onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  className="input-field appearance-none"
                   required
                 >
                   <option value="">Select a category</option>
@@ -232,7 +232,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
                     placeholder="Enter new category name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-field"
                     required
                   />
                   <button
@@ -259,7 +259,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 value={formData.barcode}
                 onChange={(e) => handleInputChange('barcode', e.target.value)}
                 placeholder="Enter barcode"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
               />
             </div>
 
@@ -272,7 +272,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 value={formData.hsnSac}
                 onChange={(e) => handleInputChange('hsnSac', e.target.value)}
                 placeholder="Enter HSN/SAC code"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
               />
             </div>
 
@@ -287,7 +287,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 placeholder="e.g., 18"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
               />
             </div>
           </div>
@@ -302,7 +302,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Enter product description"
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field resize-none"
             />
           </div>
         </div>
@@ -324,7 +324,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 placeholder="0"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -341,7 +341,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                 placeholder="0"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -382,7 +382,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                     value={size.size}
                     onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
                     placeholder="Size (e.g., S, M, L, XL)"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-field"
                   />
                 </div>
                 <div className="flex-1">
@@ -392,7 +392,7 @@ export const EditProduct: React.FC<EditProductProps> = ({
                     onChange={(e) => handleSizeChange(index, 'quantity', parseInt(e.target.value) || 0)}
                     placeholder="Quantity"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-field"
                   />
                 </div>
                 {sizes.length > 1 && (

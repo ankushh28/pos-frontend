@@ -95,7 +95,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Enter product name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field"
               required
             />
           </div>
@@ -111,7 +111,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
               <select
                 value={formData.category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                className="input-field appearance-none"
                 required
               >
                 <option value="">Select a category</option>
@@ -127,7 +127,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
                   value={formData.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
                   placeholder="Enter new category name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-field"
                   required
                 />
                 <button
@@ -158,7 +158,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
                 placeholder="0"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -175,7 +175,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
                 placeholder="0"
                 min="0"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input-field"
                 required
               />
             </div>
@@ -193,7 +193,7 @@ export const AddProduct: React.FC<AddProductProps> = ({
               onChange={(e) => handleInputChange('quantity', e.target.value)}
               placeholder="0"
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-field"
               required
             />
           </div>
