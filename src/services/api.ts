@@ -141,6 +141,13 @@ export class ApiService {
   return this.request<any>(`/product/delete/${id}`, { method: 'DELETE' });
   }
 
+  static async bulkDeleteProducts(ids: string[]) {
+    return this.request<any>('/product/bulk/delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    });
+  }
+
   static async bulkUploadProducts(file: File) {
     const formData = new FormData();
     formData.append('file', file);

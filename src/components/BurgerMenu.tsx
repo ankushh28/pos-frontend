@@ -22,68 +22,60 @@ export const BurgerMenu: React.FC<BurgerMenuProps> = ({ onNavigate, onLogout }) 
 
   return (
     <>
-      {/* Menu Button */}
       <button
         onClick={() => setIsOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
         className="p-3 rounded-xl text-accent-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
       >
         <Menu className="h-6 w-6" />
       </button>
 
-      {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Menu Panel */}
-      <div
-        className={`fixed top-0 right-0 h-full w-80 bg-surface shadow-strong z-50 transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold text-gray-900">Menu</h2>
-            <button
+        <div className="fixed inset-0 h-[100vh] z-50 flex justify-end">
+          {/* Overlay */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-xl text-accent-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="p-6">
-          <nav className="space-y-2">
-            {menuItems.map(({ id, label, icon: Icon }) => (
+            />
+          {/* Panel */}
+          <div className="relative h-full w-80 bg-white shadow-strong flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-gray-900">Menu</h2>
               <button
-                key={id}
-                onClick={() => handleItemClick(id)}
-                className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-accent-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close menu"
+                className="p-2 rounded-xl text-accent-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
               >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{label}</span>
+                <X className="h-5 w-5" />
               </button>
-            ))}
-          </nav>
-
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <button
-              onClick={() => {
-                onLogout();
-                setIsOpen(false);
-              }}
-              className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-primary hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="font-medium">Sign Out</span>
-            </button>
+            </div>
+            <div className="p-6 flex-1 overflow-y-auto">
+              <nav className="space-y-2">
+                {menuItems.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => handleItemClick(id)}
+                    className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-accent-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{label}</span>
+                  </button>
+                ))}
+              </nav>
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <button
+                  onClick={() => { onLogout(); setIsOpen(false); }}
+                  className="w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-primary hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="font-medium">Sign Out</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

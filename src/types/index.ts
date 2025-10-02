@@ -131,3 +131,23 @@ export interface ApiError {
   code?: string;
   message: string;
 }
+
+// Invoice data (used by invoice generation endpoint)
+export interface InvoiceData {
+  orderId: string;
+  date?: string;
+  customerPhone?: string;
+  paymentMethod?: 'CASH' | 'UPI';
+  discount?: number;
+  notes?: string;
+  items: Array<{
+    productId?: string;
+    name: string;
+    size: string;
+    qty: number;
+    price: number;
+    subtotal: number;
+  }>;
+  total: number;
+  profit?: number;
+}
